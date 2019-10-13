@@ -23,6 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/晶晶大佬派的活/123/javaProject/proj/bagel.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jingjing/Desktop/java/tutorial-04/tutorial-04/bagel.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
