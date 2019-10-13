@@ -5,11 +5,24 @@
  * @author Eleanor McMurtry
  */
 
+import java.awt.Shape;
+
 import bagel.util.Point;
 
 public class Peg extends Sprite {
-    public Peg(Point point) {
+    
+	// attributes
+	private String shape, color;
+	
+	
+	// , String shape, String color
+	
+	public Peg(Point point) {
         super(point, "res/peg.png");
+        
+        // shape
+        // color
+        
     }
 
     @Override
