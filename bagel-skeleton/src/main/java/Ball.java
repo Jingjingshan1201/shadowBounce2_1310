@@ -14,12 +14,13 @@ public class Ball extends Sprite {
     private static final double GRAVITY = 0.15;
     private static final double SPEED = 10;
 
-    public Ball(Point point, Vector2 direction) {
-        super(point, "res/ball.png");
+    public Ball(Point point, Vector2 direction, String imagePath) {
+        super(point, imagePath);
         velocity = direction.mul(SPEED);
     }
 
-    public boolean outOfScreen() {
+
+	public boolean outOfScreen() {
         return super.getRect().top() > Window.getHeight();
     }
 
