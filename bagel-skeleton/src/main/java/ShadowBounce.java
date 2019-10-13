@@ -17,11 +17,8 @@ public class ShadowBounce extends AbstractGame {
     private static final double PEG_OFFSET = 100;
 
     public ShadowBounce() {
-        Random rand = new Random();
-        for (int i = 0; i < pegs.length; ++i) {
-            Point p = new Point(Window.getWidth() * rand.nextDouble(),
-                             PEG_OFFSET + (Window.getHeight() - PEG_OFFSET) * rand.nextDouble());
-            pegs[i] = new Peg(p);
+    	for (int i = 0; i < pegs.length; i++) {
+        	pegs[i] = null;
         }
     }
 
