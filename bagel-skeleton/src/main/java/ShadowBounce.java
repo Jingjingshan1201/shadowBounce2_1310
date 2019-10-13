@@ -19,18 +19,22 @@ import java.util.Random;
 import org.omg.CORBA.PRIVATE_MEMBER;
 
 public class ShadowBounce extends AbstractGame {
-    private Peg[] pegs = new Peg[50];
+    // the max number of pegs is 66 (3.csv)
+	private Peg[] pegs = new Peg[70];
     private Ball ball;
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
+    
+    // initial game level, level 1
+    private static final int LEVEL = 1;
 
     public ShadowBounce() {
     	for (int i = 0; i < pegs.length; i++) {
         	pegs[i] = null;
         }
         
-        // test csv
-        readPegsPosition(1);
+        // read csv file and assign (position, color, and shape) to pegs
+        readPegsPosition(LEVEL);
     }
 
     @Override
@@ -66,15 +70,11 @@ public class ShadowBounce extends AbstractGame {
     }
     
     
-    // read position from csv
+    // read pegs' position from csv
     public void readPegsPosition(int level) {
     	
     	// csv file path
-    	String csvFilePathString = "csvFile\\" + level + ".csv";
-
-    	// blue_peg_horizontal,448,500
-    	
-    	
+    	String csvFilePathString = "csvFile/" + level + ".csv";
     	
     	File csv = new File(csvFilePathString); // CSV文件路径
         csv.setReadable(true);//设置可读
@@ -91,21 +91,23 @@ public class ShadowBounce extends AbstractGame {
         try {
             while ((line = br.readLine()) != null) // 读取到的内容给line变量
             {
-                everyLine = line;
+                everyLine = line;                
+                System.out.println(everyLine);
+                allString.add(everyLine);
+                
                 
                 String color, shape, xCoordinate, yCoordinate;
                 
                 String[] colorShapeXY = everyLine.split(",");
                 
+                // shape and color of the peg
                 String colorShape = colorShapeXY[0];
-                
                 String[] colorNshape = colorShape.split("_");
-                
                 // color
                 if(colorNshape.length == 2) {
                 	
                 	color = colorNshape[0];
-                    shape = null;
+                    shape = "";
                 	
                 }
                 // color and shape
@@ -116,15 +118,58 @@ public class ShadowBounce extends AbstractGame {
                 	
                 }
 
+                //position of the peg
                 xCoordinate = colorShapeXY[1];
                 yCoordinate = colorShapeXY[2];
                 
+                Point point = new Point(Double.valueOf(xCoordinate) , Double.valueOf(yCoordinate));
+                String imagePath;
+                
+                if(color.equals("blue")) {
+                	                	
+                	if(shape.equals("horizontal")) {
+                		
+                		imagePath = "res/horizontal-peg.png";
+
+                	}
+                	else if(shape.equals("vertical")) {
+                		
+                		imagePath = "res/vertical-peg.png";
+                		
+                	}
+                	else {
+                		
+                		imagePath = "res/peg.png";
+                		
+                	}
+                	
+                	pegs[allString.size() - 1] = new Peg(point, imagePath);
+                	
+                }
+                else if(color.equals("grey")) {
+                	
+                	if(shape.equals("horizontal")) {
+                		
+                		imagePath = "res/grey-horizontal-peg.png";
+
+                	}
+                	else if(shape.equals("vertical")) {
+                		
+                		imagePath = "res/grey-vertical-peg.png";
+                		
+                	}
+                	else {
+                		
+                		imagePath = "res/grey-peg.png";
+                		
+                	}
+                	
+                	pegs[allString.size() - 1] = new GreyPeg(point, imagePath);
+                	
+                }
                 
                 
                 
-                
-                System.out.println(everyLine);
-                allString.add(everyLine);
             }
             System.out.println("csv表格中所有行数：" + allString.size());
         } catch (IOException e) {

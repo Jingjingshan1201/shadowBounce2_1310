@@ -16,7 +16,7 @@ public class Peg extends Sprite {
     public Peg(Point point, String imagePath) {
         super(point, imagePath);
     }
-
+	
     @Override
     public void update() {
         super.draw();
