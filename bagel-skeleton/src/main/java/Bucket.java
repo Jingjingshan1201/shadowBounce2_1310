@@ -8,19 +8,22 @@ public class Bucket extends Sprite{
 
 	public Bucket(Point point) {
 		super(point,"res/bucket.png");
-		//Vector2 direction = new Vector2(512,600);
 		velocity = new Vector2(512,744);
-		velocity = velocity.mul(4);
+		velocity = Vector2.right.mul(4);
 	}
 
 	@Override
 	public void update() {
-		velocity = velocity.add(Vector2.right);
+		
 		super.move(velocity);
 		
 		if (super.getRect().left() < 0 || super.getRect().right() > Window.getWidth()) {
+			
+			System.out.println("velocity "+ velocity);
+			
             velocity = new Vector2(-velocity.x, velocity.y);
         }
+
 		super.draw();
 	}
 
