@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.omg.CORBA.PRIVATE_MEMBER;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 public class ShadowBounce extends AbstractGame {
     // the max number of pegs is 66 (3.csv)
@@ -27,7 +28,10 @@ public class ShadowBounce extends AbstractGame {
     private Bucket bucket;
     
     // initial game level, level 1
-    private static final int LEVEL = 1;
+    private static final int LEVEL = 2;
+    
+    // blue pegs counter
+    private int bluePegsCounter = 0;
 
     public ShadowBounce() {
     	//super(1024, 640);
@@ -40,6 +44,9 @@ public class ShadowBounce extends AbstractGame {
         
         // read csv file and assign (position, color, and shape) to pegs
         readPegsPosition(LEVEL);
+        
+        // randomly change 1/5 blue pegs to red pegs
+        randomlyChangeToRedPegs(bluePegsCounter);
     }
 
     @Override
@@ -158,7 +165,9 @@ public class ShadowBounce extends AbstractGame {
                 		
                 	}
                 	
-                	pegs[allString.size() - 1] = new Peg(point, imagePath);
+                	pegs[allString.size() - 1] = new Peg(point, imagePath, shape);
+                	
+                	bluePegsCounter++;
                 	
                 }
                 else if(color.equals("grey")) {
@@ -179,7 +188,7 @@ public class ShadowBounce extends AbstractGame {
                 		
                 	}
                 	
-                	pegs[allString.size() - 1] = new GreyPeg(point, imagePath);
+                	pegs[allString.size() - 1] = new GreyPeg(point, imagePath, shape);
                 	
                 }
                 
@@ -190,12 +199,50 @@ public class ShadowBounce extends AbstractGame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
         
+    public void randomlyChangeToRedPegs(int numberOfBluePegs) {
     	
+    	Random rand = new Random();
     	
+    	int numberOfRedPegs = numberOfBluePegs / 5;
     	
+    	while(numberOfRedPegs > 0) {
+    		
+    		int randomNumber = rand.nextInt(pegs.length);
+    		
+    		// RedPeg.class.isInstance(pegs[randomNumber])
+    		if(pegs[randomNumber] != null && pegs[randomNumber].getClass().equals(Peg.class)) {
+    			
+    			Point point = pegs[randomNumber].getPoint();
+    			String shape = pegs[randomNumber].getShape();
+    			String imagePath;
+    			
+    			pegs[randomNumber] = null;
+    			
+    			if(shape.equals("horizontal")) {
+            		
+            		imagePath = "res/red-horizontal-peg.png";
+
+            	}
+            	else if(shape.equals("vertical")) {
+            		
+            		imagePath = "res/red-vertical-peg.png";
+            		
+            	}
+            	else {
+            		
+            		imagePath = "res/red-peg.png";
+            		
+            	}
+    			
+    			pegs[randomNumber] = new RedPeg(point, imagePath, shape);
+    			
+    			numberOfRedPegs--;
+    			
+    		}
+    	}
     	
     }
-    
     
 }
