@@ -10,17 +10,11 @@ import java.awt.Shape;
 import bagel.util.Point;
 
 public class Peg extends Sprite {
-    
-	// attributes
-	private String shape, color;
 	
 	
-	// , String shape, String color
 	
-	public Peg(Point point, String imagePath) {
-		
-		super(point, imagePath);
-		
+    public Peg(Point point, String imagePath) {
+        super(point, imagePath);
     }
 	
     @Override
