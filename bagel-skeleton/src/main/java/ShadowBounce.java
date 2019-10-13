@@ -37,7 +37,7 @@ public class ShadowBounce extends AbstractGame {
 
         // If we don't have a ball and the mouse button was clicked, create one
         if (input.wasPressed(MouseButtons.LEFT) && ball == null) {
-            ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION));
+            ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
         }
 
         if (ball != null) {
@@ -48,6 +48,15 @@ public class ShadowBounce extends AbstractGame {
                 ball = null;
             }
         }
+    }
+    
+    // 每个turn刚开始的时候调用 看这个turn有没有power-up
+    public boolean isPowerUp () {
+    	if (Math.random()*10 == 1) {
+    		return true;
+    	}else {
+    		return false; 
+    	}
     }
 
     public static void main(String[] args) {
