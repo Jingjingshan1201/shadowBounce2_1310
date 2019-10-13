@@ -24,14 +24,19 @@ public class ShadowBounce extends AbstractGame {
     private Ball ball;
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
+    private Bucket bucket;
     
     // initial game level, level 1
     private static final int LEVEL = 1;
 
     public ShadowBounce() {
+    	//super(1024, 640);
     	for (int i = 0; i < pegs.length; i++) {
         	pegs[i] = null;
         }
+    	Point point = new Point (512, 744);
+    	bucket = new Bucket(point);
+    	
         
         // read csv file and assign (position, color, and shape) to pegs
         readPegsPosition(LEVEL);
@@ -40,6 +45,7 @@ public class ShadowBounce extends AbstractGame {
     @Override
     protected void update(Input input) {
         // Check all non-deleted pegs for intersection with the ball
+    	bucket.update();
         for (int i = 0; i < pegs.length; ++i) {
             if (pegs[i] != null) {
                 if (ball != null && ball.intersects(pegs[i])) {
