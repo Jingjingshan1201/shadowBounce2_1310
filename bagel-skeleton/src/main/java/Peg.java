@@ -17,14 +17,12 @@ public class Peg extends Sprite {
 	
 	// , String shape, String color
 	
-	public Peg(Point point) {
-        super(point, "res/peg.png");
-        
-        // shape
-        // color
-        
+	public Peg(Point point, String imagePath) {
+		
+		super(point, imagePath);
+		
     }
-
+	
     @Override
     public void update() {
         super.draw();

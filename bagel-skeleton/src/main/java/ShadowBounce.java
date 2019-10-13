@@ -29,7 +29,7 @@ public class ShadowBounce extends AbstractGame {
         	pegs[i] = null;
         }
         
-        // test csv
+        // read level 1 csv file at the beginning of the game
         readPegsPosition(1);
     }
 
@@ -91,8 +91,12 @@ public class ShadowBounce extends AbstractGame {
         try {
             while ((line = br.readLine()) != null) // 读取到的内容给line变量
             {
-                everyLine = line;
+                everyLine = line;                
+                System.out.println(everyLine);
+                allString.add(everyLine);
                 
+                
+                // ##########################################
                 String color, shape, xCoordinate, yCoordinate;
                 
                 String[] colorShapeXY = everyLine.split(",");
@@ -119,12 +123,54 @@ public class ShadowBounce extends AbstractGame {
                 xCoordinate = colorShapeXY[1];
                 yCoordinate = colorShapeXY[2];
                 
+                Point point = new Point(Double.valueOf(xCoordinate) , Double.valueOf(yCoordinate));
+                String imagePath;
+                
+                if(color.equals("blue")) {
+                	                	
+                	if(shape.equals("horizontal")) {
+                		
+                		imagePath = "res/horizontal-peg.png";
+
+                	}
+                	else if(shape.equals("vertical")) {
+                		
+                		imagePath = "res/vertical-peg.png";
+                		
+                	}
+                	else {
+                		
+                		imagePath = "res/peg.png";
+                		
+                	}
+                	
+                	pegs[allString.size() - 1] = new Peg(point, imagePath);
+                	
+                }
+                else if(color.equals("grey")) {
+                	
+                	if(shape.equals("horizontal")) {
+                		
+                		imagePath = "res/grey-horizontal-peg.png";
+
+                	}
+                	else if(shape.equals("vertical")) {
+                		
+                		imagePath = "res/grey-vertical-peg.png";
+                		
+                	}
+                	else {
+                		
+                		imagePath = "res/grey-peg.png";
+                		
+                	}
+                	
+                	// pegs[allString.size() - 1] = new Peg(point, imagePath);
+                	
+                }
                 
                 
                 
-                
-                System.out.println(everyLine);
-                allString.add(everyLine);
             }
             System.out.println("csv表格中所有行数：" + allString.size());
         } catch (IOException e) {
