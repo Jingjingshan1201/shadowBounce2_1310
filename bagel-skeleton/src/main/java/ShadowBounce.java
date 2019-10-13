@@ -14,10 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-
-import javax.xml.ws.AsyncHandler;
 
 import org.omg.CORBA.PRIVATE_MEMBER;
 
@@ -27,31 +24,28 @@ public class ShadowBounce extends AbstractGame {
     private Ball ball;
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
+    private Bucket bucket;
     
     // initial game level, level 1
-    private static final int LEVEL = 4;
-    
-    // blue pegs counter
-    private int bluePegsCounter = 0;
-    
+    private static final int LEVEL = 1;
 
     public ShadowBounce() {
-    	
+    	//super(1024, 640);
     	for (int i = 0; i < pegs.length; i++) {
         	pegs[i] = null;
         }
+    	Point point = new Point (512, 744);
+    	bucket = new Bucket(point);
+    	
         
         // read csv file and assign (position, color, and shape) to pegs
         readPegsPosition(LEVEL);
-        
-        // randomly change 1/5 blue pegs to red pegs
-        randomlyChangeToRedPegs(bluePegsCounter);
-        
     }
 
     @Override
     protected void update(Input input) {
         // Check all non-deleted pegs for intersection with the ball
+    	bucket.update();
         for (int i = 0; i < pegs.length; ++i) {
             if (pegs[i] != null) {
                 if (ball != null && ball.intersects(pegs[i])) {
@@ -164,9 +158,7 @@ public class ShadowBounce extends AbstractGame {
                 		
                 	}
                 	
-                	pegs[allString.size() - 1] = new Peg(point, imagePath, shape);
-                	
-                	bluePegsCounter += 1;
+                	pegs[allString.size() - 1] = new Peg(point, imagePath);
                 	
                 }
                 else if(color.equals("grey")) {
@@ -187,9 +179,11 @@ public class ShadowBounce extends AbstractGame {
                 		
                 	}
                 	
-                	pegs[allString.size() - 1] = new GreyPeg(point, imagePath, shape);
+                	pegs[allString.size() - 1] = new GreyPeg(point, imagePath);
                 	
                 }
+                
+                
                 
             }
             System.out.println("csv表格中所有行数：" + allString.size());
@@ -197,51 +191,9 @@ public class ShadowBounce extends AbstractGame {
             e.printStackTrace();
         }
         
-    }
-    
-    public void randomlyChangeToRedPegs(int numberOfBluePegs) {
     	
-    	Random rand = new Random();
     	
-    	int numberOfRedPegs = numberOfBluePegs / 5;
     	
-    	while(numberOfRedPegs > 0) {
-    		
-    		int randomNumber = rand.nextInt(pegs.length);
-    		
-    		// RedPeg.class.isInstance(pegs[randomNumber])
-    		if(pegs[randomNumber] != null && pegs[randomNumber].getClass().equals(Peg.class)) {
-    			
-    			Point point = pegs[randomNumber].getPoint();
-    			String shape = pegs[randomNumber].getShape();
-    			String imagePath;
-    			
-    			pegs[randomNumber] = null;
-    			
-    			if(shape.equals("horizontal")) {
-            		
-            		imagePath = "res/red-horizontal-peg.png";
-
-            	}
-            	else if(shape.equals("vertical")) {
-            		
-            		imagePath = "res/red-vertical-peg.png";
-            		
-            	}
-            	else {
-            		
-            		imagePath = "res/red-peg.png";
-            		
-            	}
-    			
-    			pegs[randomNumber] = new RedPeg(point, imagePath, shape);
-    			
-    			numberOfRedPegs--;
-    			
-    		}
-    		
-    		
-    	}
     	
     }
     
