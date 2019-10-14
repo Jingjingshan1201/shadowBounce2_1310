@@ -9,7 +9,7 @@ public class Bucket extends Sprite{
 	public Bucket(Point point) {
 		super(point,"res/bucket.png");
 		velocity = new Vector2(512,744);
-		velocity = Vector2.right.mul(4);
+		velocity = Vector2.left.mul(4);
 	}
 
 	@Override
