@@ -7,6 +7,8 @@
 
 import bagel.*;
 import bagel.util.Point;
+import bagel.util.Side;
+import bagel.util.Vector2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,37 +28,128 @@ public class ShadowBounce extends AbstractGame {
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
     private Bucket bucket;
+    private PowerUp powerUp;
+    private boolean isPowerUp = true;
     
     // initial game level, level 1
-    private static final int LEVEL = 2;
+    private static final int LEVEL = 1;
+    
+    // current level of the game
+    private int currentLevel = LEVEL;
+    
+    // number of shots
+    private int numberOfShots = 20;
+    private static final int SHOTSRUNOUTOF = 0;
     
     // blue pegs counter
     private int bluePegsCounter = 0;
+    
+    // number of red pegs
+    private int numberOfRedPegs = 0;
+    
+    // does green peg and/or fireball active?
+    boolean isGreenPeg, isFireBall;
+    
+    
 
     public ShadowBounce() {
-    	//super(1024, 640);
-    	for (int i = 0; i < pegs.length; i++) {
-        	pegs[i] = null;
-        }
-    	Point point = new Point (512, 744);
-    	bucket = new Bucket(point);
     	
-        
-        // read csv file and assign (position, color, and shape) to pegs
-        readPegsPosition(LEVEL);
-        
-        // randomly change 1/5 blue pegs to red pegs
-        randomlyChangeToRedPegs(bluePegsCounter);
+    	initializeGameBoard(currentLevel);
+    	
     }
 
     @Override
-    protected void update(Input input) {
-        // Check all non-deleted pegs for intersection with the ball
+    protected void update(Input input) {    	
+        
     	bucket.update();
+    	
+    	// test for power up
+    	//if(isPowerUp) {
+    	if(isPowerUp && powerUp != null) {
+    		powerUp.update();
+    		
+    		if(ball != null && ball.intersects(powerUp)) {
+    			
+    			System.out.print("wan dan yao kong zhi zhen le " + isPowerUp);
+    			powerUp = null;
+    			isFireBall = true;
+    			
+    			// change the ball to fire ball
+    			Point ballPoint = ball.getCurrentPoint();
+    			Vector2 ballDirection = ball.getVelocity();
+    			ball = null;
+    			ball = new FireBall(ballPoint, ballDirection.div(10),"res/fireball.png");
+    			
+    			
+    			
+    		}
+    		
+    	}
+    	
+    	// the ball intersects with bucket, the number of shots + 1
+    	if(ball != null && ball.intersects(bucket)) {
+    		
+    		numberOfShots++;
+    		System.out.println("number of shots + 1");
+    		System.out.println("shots remaining " + numberOfShots);
+    		ball = null;
+    		
+    		isGameEnd();
+    		
+    	}
+    	
+    	
+    	// Check all non-deleted pegs for intersection with the ball
         for (int i = 0; i < pegs.length; ++i) {
             if (pegs[i] != null) {
+            	
                 if (ball != null && ball.intersects(pegs[i])) {
-                    pegs[i] = null;
+                	
+                	// fire ball is activated
+                	if(isFireBall) {
+                		System.out.println("fire ball");
+                		// fire ball
+                    	//  all pegs within 70 pixels of the struck peg’s centre are destroyed
+                		for (int j = 0; j < pegs.length; j++) {
+                    		
+                    		if (pegs[j] != null && i != j) {
+                    			
+                    			double pegToPeg = pegs[i].getRect().centre().asVector().sub(pegs[j].getRect().centre().asVector()).length();
+                    			
+                        		
+                        		if(pegToPeg < 70) {
+                        			
+                        			pegTypeAction(j);
+                                	
+                        		}
+                    			
+                    		}
+                    	}
+                    	
+                    	
+                		
+                	}
+                	
+                	pegTypeAction(i);
+                	
+                	// 注释下面的部分，测试bucket
+                	//check which side of the peg is intersected with the ball, and change the velocity of the ball
+                	// start here ****************
+                	//String intersectedSide = ball.getRect().intersectedAt(ball.getRect().centre(), ball.getVelocity()).toString();
+                	String intersectedSide = ball.getRect().intersectedAt(ball.getRect().topLeft(), ball.getVelocity()).toString();
+                	
+                	if(intersectedSide.equals("TOP") || intersectedSide.equals("BOTTOM")) {
+                		
+                		ball.setVelocity(new Vector2(ball.getVelocity().x, -ball.getVelocity().y));
+                		
+                	}
+                	else if(intersectedSide.equals("LEFT") || intersectedSide.equals("RIGHT")) {
+                		
+                		ball.setVelocity(new Vector2(-ball.getVelocity().x, ball.getVelocity().y));
+						
+					}
+                	// end here **********************
+                	
                 } else {
                     pegs[i].update();
                 }
@@ -65,7 +158,29 @@ public class ShadowBounce extends AbstractGame {
 
         // If we don't have a ball and the mouse button was clicked, create one
         if (input.wasPressed(MouseButtons.LEFT) && ball == null) {
-            ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
+            //ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
+        	// test for fire ball
+//        	ball = new FireBall(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/fireball.png");
+        	if(isFireBall) {
+        		
+        		ball = new FireBall(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/fireball.png");
+        		
+        	}
+        	else {
+        		
+        		ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
+        		
+        	}
+
+        	
+            
+            // number of shots decreased by 1
+            numberOfShots--;
+            System.out.println("shots remaining " + numberOfShots);
+            
+            // test for red pegs
+//            numberOfRedPegs--;
+//            System.out.println("red pegs remaining " + numberOfRedPegs);
         }
 
         if (ball != null) {
@@ -74,13 +189,19 @@ public class ShadowBounce extends AbstractGame {
             // Delete the ball when it leaves the screen
             if (ball.outOfScreen()) {
                 ball = null;
+                
+                isGameEnd();
+                
+                
             }
         }
     }
     
     // 每个turn刚开始的时候调用 看这个turn有没有power-up
-    public boolean isPowerUp () {
-    	if (Math.random()*10 == 1) {
+    // 0.0<=Math.random()<1.0
+    // 10%
+    public boolean checkForPowerUp () {
+    	if (Math.random()*10 < 1) {
     		return true;
     	}else {
     		return false; 
@@ -94,6 +215,11 @@ public class ShadowBounce extends AbstractGame {
     
     // read pegs' position from csv
     public void readPegsPosition(int level) {
+    	
+    	// 每次调用 是不是应该确保 bluePegsCounter == 0;
+    	// 因为每次读 都相当于 进入了新的一关
+    	bluePegsCounter = 0;
+    	
     	
     	// csv file path
     	String csvFilePathString = "csvFile/" + level + ".csv";
@@ -114,7 +240,7 @@ public class ShadowBounce extends AbstractGame {
             while ((line = br.readLine()) != null) // 读取到的内容给line变量
             {
                 everyLine = line;                
-                System.out.println(everyLine);
+                // System.out.println(everyLine);
                 allString.add(everyLine);
                 
                 
@@ -195,19 +321,22 @@ public class ShadowBounce extends AbstractGame {
                 
                 
             }
-            System.out.println("csv表格中所有行数：" + allString.size());
+            // System.out.println("csv表格中所有行数：" + allString.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-        
-    public void randomlyChangeToRedPegs(int numberOfBluePegs) {
+    
+    // randomly change 1/5 blue pegs to red pegs
+    public void randomlyChangeToRedPegs() {
     	
     	Random rand = new Random();
     	
-    	int numberOfRedPegs = numberOfBluePegs / 5;
+    	numberOfRedPegs = bluePegsCounter / 5;
     	
-    	while(numberOfRedPegs > 0) {
+    	int redPegsCounter = 0;
+    	
+    	while(redPegsCounter < numberOfRedPegs) {
     		
     		int randomNumber = rand.nextInt(pegs.length);
     		
@@ -238,10 +367,162 @@ public class ShadowBounce extends AbstractGame {
     			
     			pegs[randomNumber] = new RedPeg(point, imagePath, shape);
     			
-    			numberOfRedPegs--;
+    			redPegsCounter++;
     			
     		}
     	}
+    	
+    }
+    
+    // randomly change 1 blue pegs to green pegs
+    public void randomlyChangeToGreenPeg() {
+    	
+    	Random rand = new Random();
+    	
+    	boolean changeToGreen = false;
+    	
+    	while(!changeToGreen) {
+    		
+    		int randomNumber = rand.nextInt(pegs.length);
+    		
+    		if(pegs[randomNumber] != null && pegs[randomNumber].getClass().equals(Peg.class)) {
+    			
+    			Point point = pegs[randomNumber].getPoint();
+    			String shape = pegs[randomNumber].getShape();
+    			String imagePath;
+    			
+    			pegs[randomNumber] = null;
+    			
+    			if(shape.equals("horizontal")) {
+            		
+            		imagePath = "res/green-horizontal-peg.png";
+
+            	}
+            	else if(shape.equals("vertical")) {
+            		
+            		imagePath = "res/green-vertical-peg.png";
+            		
+            	}
+            	else {
+            		
+            		imagePath = "res/green-peg.png";
+            		
+            	}
+    			
+    			pegs[randomNumber] = new GreenPeg(point, imagePath, shape);
+    			
+    			changeToGreen = true;
+    		
+    		}
+    	}
+    	
+    }
+    
+    // initialize a game board
+    public void initializeGameBoard(int currentLevel) {
+    	
+    	numberOfShots = 20;
+    	
+    	// one shot
+    	isGreenPeg = false;
+    	
+    	// one turn
+    	isFireBall = false;
+    	
+    	
+    	
+    	
+    	//initialize array of pegs
+    	for (int i = 0; i < pegs.length; i++) {
+        	pegs[i] = null;
+        }
+    	Point point = new Point (512, 744);
+    	bucket = new Bucket(point);
+    	
+    	// read csv file and assign (position, color, and shape) to pegs
+    	// update bluePegsCounter
+        readPegsPosition(currentLevel);
+        // System.out.println(bluePegsCounter);
+        
+        // randomly change 1/5 blue pegs to red pegs
+        // update numberOfRedPegs
+        randomlyChangeToRedPegs();
+        
+        // randomly change 1 blue peg to green peg
+        randomlyChangeToGreenPeg();
+        
+        // !注释下面的部分，测试power
+        // ***************  test for power up ****************
+        Random rand = new Random();
+		// generate x and y for destination point
+		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
+    	powerUp = new PowerUp(p);
+    	
+    	// ************* end ****************
+        
+//        // check for power up
+//        isPowerUp = checkForPowerUp();
+//        if(isPowerUp) {
+//        	
+//        	// System.out.println("power uppppp");
+//        	
+//        	Random rand = new Random();
+//    		// generate x and y for destination point
+//    		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
+//        	powerUp = new PowerUp(p);
+//        	
+//        }
+//        else {
+//        	// System.out.println("no power uppppp");
+//        }
+    	
+    }
+    
+    // check for peg's type
+    public void pegTypeAction(int index) {
+    	
+    	if(!pegs[index].getClass().equals(GreyPeg.class)) {
+    		
+    		// if it is a red peg
+    		if(pegs[index].getClass().equals(RedPeg.class)) {
+    		
+    			numberOfRedPegs--;
+    		
+    		}
+    	
+    		if(pegs[index].getClass().equals(GreenPeg.class)) {
+    		
+    			// two new balls
+    		
+    		}
+    	
+    		pegs[index] = null;
+    	}
+    	
+    }
+    
+    // check for game end
+    public void isGameEnd() {
+    	
+    	// goes to next level
+        if(numberOfRedPegs == 0 && (currentLevel + 1) <= 4) {
+        	
+        	currentLevel += 1;
+        	initializeGameBoard(currentLevel);
+        	
+        }
+        // highest level reached
+        else if(numberOfRedPegs == 0 && (currentLevel + 1) > 4) {
+        	
+        	System.out.println("tong guan la");
+        	
+        }
+        // run out of shots, initial a new game at current level
+        else if(numberOfShots == SHOTSRUNOUTOF) {
+        	
+        	initializeGameBoard(currentLevel);
+        	
+        }
     	
     }
     
