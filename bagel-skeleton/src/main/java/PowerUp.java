@@ -27,16 +27,16 @@ public class PowerUp extends Sprite {
 		
 		// calculate the distance between powerup and destination
 		double distance = destination.asVector().sub(super.getRect().topLeft().asVector()).length();
-		System.out.println("destinaion " + destination.toString());
-		System.out.println("topleft " + super.getRect().topLeft().toString());
-		System.out.println("distance " + distance);
+		// System.out.println("destinaion " + destination.toString());
+		// System.out.println("topleft " + super.getRect().topLeft().toString());
+		// System.out.println("distance " + distance);
 		
 		
 		if(distance > 5) {
         	
         	// moving towards to the destination
 			super.move(velocity);
-			System.out.println("da guo 5");
+			// System.out.println("da guo 5");
         	
         }
         else {
@@ -44,14 +44,14 @@ public class PowerUp extends Sprite {
         	// create a new destination
         	// update velocity
         	destinationVelocity();
-        	System.out.println("destinaion " + destination.toString());
-        	System.out.println("topleft " + super.getRect().topLeft().toString());
-        	System.out.println("velocity " + velocity.toString());
+        	// System.out.println("destinaion " + destination.toString());
+        	// System.out.println("topleft " + super.getRect().topLeft().toString());
+        	// System.out.println("velocity " + velocity.toString());
         	
     		
     		super.move(velocity);
     		
-    		System.out.println("xiao guo 5");
+    		// System.out.println("xiao guo 5");
         	
         	
         }

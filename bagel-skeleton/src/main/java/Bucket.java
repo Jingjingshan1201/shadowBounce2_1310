@@ -19,7 +19,7 @@ public class Bucket extends Sprite{
 		
 		if (super.getRect().left() < 0 || super.getRect().right() > Window.getWidth()) {
 			
-			System.out.println("velocity "+ velocity);
+			// System.out.println("velocity "+ velocity);
 			
             velocity = new Vector2(-velocity.x, velocity.y);
         }
