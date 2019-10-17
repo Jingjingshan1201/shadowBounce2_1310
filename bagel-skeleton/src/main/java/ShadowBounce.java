@@ -18,18 +18,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.lwjgl.system.windows.WindowsLibrary;
 import org.omg.CORBA.PRIVATE_MEMBER;
 import org.omg.CORBA.PUBLIC_MEMBER;
 
 public class ShadowBounce extends AbstractGame {
     // the max number of pegs is 66 (3.csv)
 	private Peg[] pegs = new Peg[70];
-    private Ball ball;
+    //private Ball ball;
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
     private Bucket bucket;
     private PowerUp powerUp;
     private boolean isPowerUp = true;
+    private Ball[] balls;
     
     // initial game level, level 1
     private static final int LEVEL = 1;
@@ -53,148 +55,76 @@ public class ShadowBounce extends AbstractGame {
     
 
     public ShadowBounce() {
-    	
+    	balls = new Ball[3];
     	initializeGameBoard(currentLevel);
+    	
     	
     }
 
     @Override
-    protected void update(Input input) {    	
-        
+    protected void update(Input input) { 
     	bucket.update();
-    	
-    	// test for power up
-    	//if(isPowerUp) {
     	if(isPowerUp && powerUp != null) {
     		powerUp.update();
-    		
-    		if(ball != null && ball.intersects(powerUp)) {
-    			
-    			System.out.print("wan dan yao kong zhi zhen le " + isPowerUp);
-    			powerUp = null;
-    			isFireBall = true;
-    			
-    			// change the ball to fire ball
-    			Point ballPoint = ball.getCurrentPoint();
-    			Vector2 ballDirection = ball.getVelocity();
-    			ball = null;
-    			ball = new FireBall(ballPoint, ballDirection.div(10),"res/fireball.png");
-    			
-    			
+    		for (int k = 0; k<3; k++) {
+    			if (balls[k]!=null) {
+    				powerupCollision(k);
+        			bucketCollision(k);
+    			}
     			
     		}
-    		
     	}
-    	
-    	// the ball intersects with bucket, the number of shots + 1
-    	if(ball != null && ball.intersects(bucket)) {
-    		
-    		numberOfShots++;
-    		System.out.println("number of shots + 1");
-    		System.out.println("shots remaining " + numberOfShots);
-    		ball = null;
-    		
-    		isGameEnd();
-    		
-    	}
-    	
-    	
-    	// Check all non-deleted pegs for intersection with the ball
-        for (int i = 0; i < pegs.length; ++i) {
+    	// pegs collision check 
+    	for (int i = 0; i < pegs.length; ++i) {
             if (pegs[i] != null) {
-            	
-                if (ball != null && ball.intersects(pegs[i])) {
-                	
-                	// fire ball is activated
-                	if(isFireBall) {
-                		System.out.println("fire ball");
-                		// fire ball
-                    	//  all pegs within 70 pixels of the struck peg’s centre are destroyed
-                		for (int j = 0; j < pegs.length; j++) {
-                    		
-                    		if (pegs[j] != null && i != j) {
-                    			
-                    			double pegToPeg = pegs[i].getRect().centre().asVector().sub(pegs[j].getRect().centre().asVector()).length();
-                    			
-                        		
-                        		if(pegToPeg < 70) {
-                        			
-                        			pegTypeAction(j);
-                                	
-                        		}
-                    			
-                    		}
-                    	}
-                    	
-                    	
-                		
-                	}
-                	
-                	pegTypeAction(i);
-                	
-                	// 注释下面的部分，测试bucket
-                	//check which side of the peg is intersected with the ball, and change the velocity of the ball
-                	// start here ****************
-                	//String intersectedSide = ball.getRect().intersectedAt(ball.getRect().centre(), ball.getVelocity()).toString();
-                	String intersectedSide = ball.getRect().intersectedAt(ball.getRect().topLeft(), ball.getVelocity()).toString();
-                	
-                	if(intersectedSide.equals("TOP") || intersectedSide.equals("BOTTOM")) {
-                		
-                		ball.setVelocity(new Vector2(ball.getVelocity().x, -ball.getVelocity().y));
-                		
-                	}
-                	else if(intersectedSide.equals("LEFT") || intersectedSide.equals("RIGHT")) {
-                		
-                		ball.setVelocity(new Vector2(-ball.getVelocity().x, ball.getVelocity().y));
-						
-					}
-                	// end here **********************
-                	
-                } else {
-                    pegs[i].update();
-                }
+            	for(int k = 0; k<3;k++) {
+            		if (balls[k] != null && pegs[i]!=null && balls[k].intersects(pegs[i]) ) {
+            			if(isFireBall) {
+            				fireballCollision(i);
+            			}
+            			ballReaction(balls[k]);
+            			pegTypeAction(i);
+            			
+            		}else {
+            			if(pegs[i]!=null) {
+                			pegs[i].update();
+
+            			}
+            		}
+            	}
             }
-        }
-
-        // If we don't have a ball and the mouse button was clicked, create one
-        if (input.wasPressed(MouseButtons.LEFT) && ball == null) {
-            //ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
-        	// test for fire ball
-//        	ball = new FireBall(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/fireball.png");
-        	if(isFireBall) {
+    	}
+    	// when all balls out of screen, new a ball at balls[0]
+    	if (balls[0] == null && balls[1]==null && balls[2] == null && input.wasPressed(MouseButtons.LEFT)) {
+    			if(isFireBall) {
         		
-        		ball = new FireBall(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/fireball.png");
+    				balls[0] = new FireBall(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/fireball.png");
         		
-        	}
-        	else {
+    			}
+    			else {
         		
-        		ball = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
+    				balls[0] = new Ball(BALL_POSITION, input.directionToMouse(BALL_POSITION),"res/ball.png");
         		
-        	}
-
-        	
-            
-            // number of shots decreased by 1
-            numberOfShots--;
-            System.out.println("shots remaining " + numberOfShots);
-            
-            // test for red pegs
-//            numberOfRedPegs--;
-//            System.out.println("red pegs remaining " + numberOfRedPegs);
-        }
-
-        if (ball != null) {
-            ball.update();
-
-            // Delete the ball when it leaves the screen
-            if (ball.outOfScreen()) {
-                ball = null;
-                
-                isGameEnd();
-                
-                
-            }
-        }
+    			}
+    			
+    			// only balls[0] count 
+    	    	numberOfShots--;
+    	        System.out.println("shots remaining " + numberOfShots);
+    	}
+    	
+    	for (int k = 0; k<3; k++) {
+    		if (balls[k]!=null) {
+    			balls[k].update();
+    			if (balls[k].outOfScreen()) {
+    				balls[k]=null;
+    				isGameEnd();
+    			}
+    		}
+    	}
+    	
+    	
+        
+    	
     }
     
     // 每个turn刚开始的时候调用 看这个turn有没有power-up
@@ -421,6 +351,9 @@ public class ShadowBounce extends AbstractGame {
     // initialize a game board
     public void initializeGameBoard(int currentLevel) {
     	
+    	for (int k = 0; k<3; k++) {
+    		balls[k] = null;
+    	}
     	numberOfShots = 20;
     	
     	// one shot
@@ -429,6 +362,7 @@ public class ShadowBounce extends AbstractGame {
     	// one turn
     	isFireBall = false;
     	
+    	isGreenPeg = false;
     	
     	
     	
@@ -453,28 +387,28 @@ public class ShadowBounce extends AbstractGame {
         
         // !注释下面的部分，测试power
         // ***************  test for power up ****************
-        Random rand = new Random();
-		// generate x and y for destination point
-		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
-    	powerUp = new PowerUp(p);
+//        Random rand = new Random();
+//		// generate x and y for destination point
+//		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
+//    	powerUp = new PowerUp(p);
     	
     	// ************* end ****************
         
 //        // check for power up
-//        isPowerUp = checkForPowerUp();
-//        if(isPowerUp) {
-//        	
-//        	// System.out.println("power uppppp");
-//        	
-//        	Random rand = new Random();
-//    		// generate x and y for destination point
-//    		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
-//        	powerUp = new PowerUp(p);
-//        	
-//        }
-//        else {
-//        	// System.out.println("no power uppppp");
-//        }
+        isPowerUp = checkForPowerUp();
+        if(isPowerUp) {
+        	
+        	System.out.println("power uppppp");
+        	
+        	Random rand = new Random();
+    		// generate x and y for destination point
+    		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
+        	powerUp = new PowerUp(p);
+        	
+        }
+        else {
+        	System.out.println("no power uppppp");
+        }
     	
     }
     
@@ -487,13 +421,31 @@ public class ShadowBounce extends AbstractGame {
     		if(pegs[index].getClass().equals(RedPeg.class)) {
     		
     			numberOfRedPegs--;
+    			
+    		
     		
     		}
     	
     		if(pegs[index].getClass().equals(GreenPeg.class)) {
     		
     			// two new balls
-    		
+    				isGreenPeg = true;
+    				Point greenPegPosition = pegs[index].getPoint();
+    				Vector2 baseVelRight = new Vector2 (Math.sqrt(50),Math.sqrt(50));
+    				Vector2 baseVelLeft = new Vector2 (-Math.sqrt(50),Math.sqrt(50));
+
+  				
+    				if(balls[0].getClass().equals(Ball.class)) {
+    					balls[1] = new Ball (greenPegPosition, baseVelRight.div(10),"res/ball.png");
+        				balls[2] = new Ball (greenPegPosition,baseVelLeft.div(10),"res/ball.png");
+    				}
+
+    				else {
+        				balls[1] = new FireBall (greenPegPosition, baseVelRight.div(10),"res/fireball.png");
+        				balls[2] = new FireBall (greenPegPosition, baseVelLeft.div(10),"res/fireball.png");
+
+    				}
+    			  		
     		}
     	
     		pegs[index] = null;
@@ -510,11 +462,14 @@ public class ShadowBounce extends AbstractGame {
         	currentLevel += 1;
         	initializeGameBoard(currentLevel);
         	
+        	
         }
         // highest level reached
         else if(numberOfRedPegs == 0 && (currentLevel + 1) > 4) {
         	
         	System.out.println("tong guan la");
+        	Window.close();
+        	
         	
         }
         // run out of shots, initial a new game at current level
@@ -525,5 +480,75 @@ public class ShadowBounce extends AbstractGame {
         }
     	
     }
+    
+    public void fireballCollision (int i) {
+    	System.out.println("fire ball");
+		// fire ball
+    	//  all pegs within 70 pixels of the struck peg’s centre are destroyed
+		for (int j = 0; j < pegs.length; j++) {
+    		
+    		if (pegs[j] != null && i != j) {
+    			
+    			double pegToPeg = pegs[i].getRect().centre().asVector().sub(pegs[j].getRect().centre().asVector()).length();
+    			
+        		
+        		if(pegToPeg < 70) {
+        			
+        			pegTypeAction(j);
+                	
+        		}
+    			
+    		}
+    	}
+    }
+    
+    public void ballReaction (Ball ball) {
+    	//String intersectedSide = ball.getRect().intersectedAt(ball.getRect().centre(), ball.getVelocity()).toString();
+
+    	String intersectedSide = ball.getRect().intersectedAt(ball.getRect().topLeft(), ball.getVelocity()).toString();
+    	
+    	if(intersectedSide.equals("TOP") || intersectedSide.equals("BOTTOM")) {
+    		
+    		ball.setVelocity(new Vector2(ball.getVelocity().x, -ball.getVelocity().y));
+    		
+    	}
+    	else if(intersectedSide.equals("LEFT") || intersectedSide.equals("RIGHT")) {
+    		
+    		ball.setVelocity(new Vector2(-ball.getVelocity().x, ball.getVelocity().y));
+			
+		}
+    }
+    
+    public void bucketCollision(int k) {
+    	if(balls[k] != null && balls[k].intersects(bucket)) {
+    		
+    		numberOfShots++;
+    		System.out.println("number of shots + 1");
+    		System.out.println("shots remaining " + numberOfShots);
+    		balls[k] = null;
+    		
+    		isGameEnd();
+    		
+    	}
+    }
+    
+    public void powerupCollision (int k) {
+    	if(isPowerUp && powerUp != null) {
+    		if(balls[k] != null && balls[k].intersects(powerUp)) {
+			
+    			System.out.print("wan dan yao kong zhi zhen le " + isPowerUp);
+    			powerUp = null;
+    			isFireBall = true;
+			
+    			// change the ball to fire ball
+    			Point ballPoint = balls[k].getCurrentPoint();
+    			Vector2 ballDirection = balls[k].getVelocity();
+    			balls[k] = null;
+    			balls[k] = new FireBall(ballPoint, ballDirection.div(10),"res/fireball.png");			  			    			
+    		}
+    	}
+    }
+    
+
     
 }
