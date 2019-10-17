@@ -1,9 +1,21 @@
+/**
+ * SWEN20003 Object Oriented Software Development
+ * Project 2B, Semester 2, 2019
+ *
+ * @author XiaoJun Zhang
+ */
+
 import java.util.Random;
 
 import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+
+/**
+ * this class inherit Sprite class
+ *
+ */
 public class PowerUp extends Sprite {
 
     private static final double SPEED = 3;
@@ -13,7 +25,6 @@ public class PowerUp extends Sprite {
     
     private Vector2 velocity;
 	
-	// Point point, Vector2 direction
     public PowerUp(Point point) {
     	super(point, "res/powerup.png");
 		
@@ -22,21 +33,20 @@ public class PowerUp extends Sprite {
 	}
 
 	@Override
+	/**
+	 * update the movement of the power up
+	 */
 	public void update() {
 				
 		
 		// calculate the distance between powerup and destination
 		double distance = destination.asVector().sub(super.getRect().topLeft().asVector()).length();
-		// System.out.println("destinaion " + destination.toString());
-		// System.out.println("topleft " + super.getRect().topLeft().toString());
-		// System.out.println("distance " + distance);
 		
 		
 		if(distance > 5) {
         	
         	// moving towards to the destination
 			super.move(velocity);
-			// System.out.println("da guo 5");
         	
         }
         else {
@@ -44,14 +54,8 @@ public class PowerUp extends Sprite {
         	// create a new destination
         	// update velocity
         	destinationVelocity();
-        	// System.out.println("destinaion " + destination.toString());
-        	// System.out.println("topleft " + super.getRect().topLeft().toString());
-        	// System.out.println("velocity " + velocity.toString());
-        	
     		
     		super.move(velocity);
-    		
-    		// System.out.println("xiao guo 5");
         	
         	
         }

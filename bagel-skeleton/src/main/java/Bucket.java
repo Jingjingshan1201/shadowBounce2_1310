@@ -1,7 +1,18 @@
+/**
+ * SWEN20003 Object Oriented Software Development
+ * Project 2B, Semester 2, 2019
+ *
+ * @author XiaoJun Zhang
+ */
+
 import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+/**
+ * this class inherit Sprite class
+ *
+ */
 public class Bucket extends Sprite{
     private Vector2 velocity;
 
@@ -13,6 +24,9 @@ public class Bucket extends Sprite{
 	}
 
 	@Override
+	/**
+	 * update the movement of the bucket
+	 */
 	public void update() {
 		
 		super.move(velocity);
