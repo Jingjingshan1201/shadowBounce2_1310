@@ -1,8 +1,8 @@
 /**
- * Sample solution for SWEN20003 Object Oriented Software Development
- * Project 1, Semester 2, 2019
+ * SWEN20003 Object Oriented Software Development
+ * Project 2B, Semester 2, 2019
  *
- * @author Eleanor McMurtry
+ * @author XiaoJun Zhang
  */
 
 import bagel.Window;
@@ -23,11 +23,18 @@ public class Ball extends Sprite {
     }
 
 
+    /**
+     * check the ball is out of screen or not
+     * @return whether ball is out of screen
+     */
 	public boolean outOfScreen() {
         return super.getRect().top() > Window.getHeight();
     }
 
     @Override
+    /**
+     * update the ball's movement
+     */
     public void update() {
     	
     	currentPoint = super.getRect().topLeft();

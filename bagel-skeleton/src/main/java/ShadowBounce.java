@@ -1,8 +1,8 @@
 /**
- * Sample solution for SWEN20003 Object Oriented Software Development
- * Project 1, Semester 2, 2019
+ * SWEN20003 Object Oriented Software Development
+ * Project 2B, Semester 2, 2019
  *
- * @author Eleanor McMurtry
+ * @author XiaoJun Zhang
  */
 
 import bagel.*;
@@ -22,10 +22,20 @@ import org.lwjgl.system.windows.WindowsLibrary;
 import org.omg.CORBA.PRIVATE_MEMBER;
 import org.omg.CORBA.PUBLIC_MEMBER;
 
+/**
+ * main game logic here
+ * 
+ * this class inherits the AbstractGame class
+ * @version 3.0
+ *
+ */
 public class ShadowBounce extends AbstractGame {
-    // the max number of pegs is 66 (3.csv)
 	private Peg[] pegs = new Peg[70];
-    //private Ball ball;
+	private static final int FIREBALLRANGE = 70;
+	private static final int ONEFIFTH = 5;
+	private static final double VECTORX = 50;
+	private static final double VECTORY = 50;
+	private static final int SPEED = 10;
     private static final Point BALL_POSITION = new Point(512, 32);
     private static final double PEG_OFFSET = 100;
     private Bucket bucket;
@@ -43,7 +53,6 @@ public class ShadowBounce extends AbstractGame {
     private int numberOfShots = 20;
     private static final int SHOTSRUNOUTOF = 0;
     
-    // blue pegs counter
     private int bluePegsCounter = 0;
     
     // number of red pegs
@@ -57,11 +66,14 @@ public class ShadowBounce extends AbstractGame {
     public ShadowBounce() {
     	balls = new Ball[3];
     	initializeGameBoard(currentLevel);
-    	
-    	
     }
 
     @Override
+    /**
+     * clean and re-draw the canvas every frame
+     * @param input: inpupt from the keyboard
+     * 
+     */
     protected void update(Input input) { 
     	bucket.update();
     	if(isPowerUp && powerUp != null) {
@@ -69,7 +81,7 @@ public class ShadowBounce extends AbstractGame {
     		for (int k = 0; k<3; k++) {
     			if (balls[k]!=null) {
     				powerupCollision(k);
-        			bucketCollision(k);
+        			
     			}
     			
     		}
@@ -114,6 +126,14 @@ public class ShadowBounce extends AbstractGame {
     	
     	for (int k = 0; k<3; k++) {
     		if (balls[k]!=null) {
+    			
+    			bucketCollision(k);
+    		}
+    	}
+    	
+    	for (int k = 0; k<3; k++) {
+    		if (balls[k]!=null) {
+    			
     			balls[k].update();
     			if (balls[k].outOfScreen()) {
     				balls[k]=null;
@@ -123,13 +143,16 @@ public class ShadowBounce extends AbstractGame {
     	}
     	
     	
+    	
+    	
         
     	
     }
     
-    // 每个turn刚开始的时候调用 看这个turn有没有power-up
-    // 0.0<=Math.random()<1.0
-    // 10%
+    /**
+     * 1/10 chance to create a power up
+     * @return boolean indicate whether there is a power up in the game
+     */
     public boolean checkForPowerUp () {
     	if (Math.random()*10 < 1) {
     		return true;
@@ -143,20 +166,21 @@ public class ShadowBounce extends AbstractGame {
     }
     
     
-    // read pegs' position from csv
+    /**
+     * read pegs' position from csv
+     * @param level the name of the csv file
+     */
     public void readPegsPosition(int level) {
     	
-    	// 每次调用 是不是应该确保 bluePegsCounter == 0;
-    	// 因为每次读 都相当于 进入了新的一关
     	bluePegsCounter = 0;
     	
     	
     	// csv file path
-    	String csvFilePathString = "csvFile/" + level + ".csv";
+    	String csvFilePathString = "res/" + level + ".csv";
     	
-    	File csv = new File(csvFilePathString); // CSV文件路径
-        csv.setReadable(true);//设置可读
-        csv.setWritable(true);//设置可写
+    	File csv = new File(csvFilePathString);
+        csv.setReadable(true);
+        csv.setWritable(true);
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(csv));
@@ -167,13 +191,10 @@ public class ShadowBounce extends AbstractGame {
         String everyLine = "";
         ArrayList<String> allString = new ArrayList<>();
         try {
-            while ((line = br.readLine()) != null) // 读取到的内容给line变量
+            while ((line = br.readLine()) != null)
             {
                 everyLine = line;                
-                // System.out.println(everyLine);
                 allString.add(everyLine);
-                
-                
                 String color, shape, xCoordinate, yCoordinate;
                 
                 String[] colorShapeXY = everyLine.split(",");
@@ -246,23 +267,21 @@ public class ShadowBounce extends AbstractGame {
                 	
                 	pegs[allString.size() - 1] = new GreyPeg(point, imagePath, shape);
                 	
-                }
-                
-                
-                
+                } 
             }
-            // System.out.println("csv表格中所有行数：" + allString.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-    // randomly change 1/5 blue pegs to red pegs
+    /**
+     * randomly change 1/5 blue pegs to red pegs
+     */
     public void randomlyChangeToRedPegs() {
     	
     	Random rand = new Random();
     	
-    	numberOfRedPegs = bluePegsCounter / 5;
+    	numberOfRedPegs = bluePegsCounter / ONEFIFTH;
     	
     	int redPegsCounter = 0;
     	
@@ -270,7 +289,6 @@ public class ShadowBounce extends AbstractGame {
     		
     		int randomNumber = rand.nextInt(pegs.length);
     		
-    		// RedPeg.class.isInstance(pegs[randomNumber])
     		if(pegs[randomNumber] != null && pegs[randomNumber].getClass().equals(Peg.class)) {
     			
     			Point point = pegs[randomNumber].getPoint();
@@ -304,7 +322,10 @@ public class ShadowBounce extends AbstractGame {
     	
     }
     
-    // randomly change 1 blue pegs to green pegs
+    
+    /**
+     * randomly change 1 blue pegs to green pegs
+     */
     public void randomlyChangeToGreenPeg() {
     	
     	Random rand = new Random();
@@ -347,10 +368,14 @@ public class ShadowBounce extends AbstractGame {
     	}
     	
     }
-    
-    // initialize a game board
+     
+    /**
+     * initialize a game board
+     * @param currentLevel the level the player is going to play
+     */
     public void initializeGameBoard(int currentLevel) {
     	
+    	// initialize array of balls
     	for (int k = 0; k<3; k++) {
     		balls[k] = null;
     	}
@@ -376,7 +401,6 @@ public class ShadowBounce extends AbstractGame {
     	// read csv file and assign (position, color, and shape) to pegs
     	// update bluePegsCounter
         readPegsPosition(currentLevel);
-        // System.out.println(bluePegsCounter);
         
         // randomly change 1/5 blue pegs to red pegs
         // update numberOfRedPegs
@@ -384,21 +408,10 @@ public class ShadowBounce extends AbstractGame {
         
         // randomly change 1 blue peg to green peg
         randomlyChangeToGreenPeg();
-        
-        // !注释下面的部分，测试power
-        // ***************  test for power up ****************
-//        Random rand = new Random();
-//		// generate x and y for destination point
-//		Point p = new Point(Window.getWidth() * rand.nextDouble(), Window.getHeight() * rand.nextDouble());
-//    	powerUp = new PowerUp(p);
-    	
-    	// ************* end ****************
-        
-//        // check for power up
+
+        // check for power up
         isPowerUp = checkForPowerUp();
         if(isPowerUp) {
-        	
-        	System.out.println("power uppppp");
         	
         	Random rand = new Random();
     		// generate x and y for destination point
@@ -406,13 +419,14 @@ public class ShadowBounce extends AbstractGame {
         	powerUp = new PowerUp(p);
         	
         }
-        else {
-        	System.out.println("no power uppppp");
-        }
     	
     }
     
-    // check for peg's type
+    // 
+    /**
+     * check for peg's type and take actions
+     * @param index the index of the struck peg
+     */
     public void pegTypeAction(int index) {
     	
     	if(!pegs[index].getClass().equals(GreyPeg.class)) {
@@ -421,28 +435,25 @@ public class ShadowBounce extends AbstractGame {
     		if(pegs[index].getClass().equals(RedPeg.class)) {
     		
     			numberOfRedPegs--;
-    			
-    		
-    		
     		}
     	
     		if(pegs[index].getClass().equals(GreenPeg.class)) {
     		
-    			// two new balls
+    				// two new balls
     				isGreenPeg = true;
     				Point greenPegPosition = pegs[index].getPoint();
-    				Vector2 baseVelRight = new Vector2 (Math.sqrt(50),Math.sqrt(50));
-    				Vector2 baseVelLeft = new Vector2 (-Math.sqrt(50),Math.sqrt(50));
+    				Vector2 baseVelRight = new Vector2 (Math.sqrt(VECTORX),Math.sqrt(VECTORY));
+    				Vector2 baseVelLeft = new Vector2 (-Math.sqrt(VECTORX),Math.sqrt(VECTORY));
 
   				
     				if(balls[0].getClass().equals(Ball.class)) {
-    					balls[1] = new Ball (greenPegPosition, baseVelRight.div(10),"res/ball.png");
-        				balls[2] = new Ball (greenPegPosition,baseVelLeft.div(10),"res/ball.png");
+    					balls[1] = new Ball (greenPegPosition, baseVelRight.div(SPEED),"res/ball.png");
+        				balls[2] = new Ball (greenPegPosition,baseVelLeft.div(SPEED),"res/ball.png");
     				}
 
     				else {
-        				balls[1] = new FireBall (greenPegPosition, baseVelRight.div(10),"res/fireball.png");
-        				balls[2] = new FireBall (greenPegPosition, baseVelLeft.div(10),"res/fireball.png");
+        				balls[1] = new FireBall (greenPegPosition, baseVelRight.div(SPEED),"res/fireball.png");
+        				balls[2] = new FireBall (greenPegPosition, baseVelLeft.div(SPEED),"res/fireball.png");
 
     				}
     			  		
@@ -453,7 +464,9 @@ public class ShadowBounce extends AbstractGame {
     	
     }
     
-    // check for game end
+    /**
+     * check for game end
+     */
     public void isGameEnd() {
     	
     	// goes to next level
@@ -467,7 +480,6 @@ public class ShadowBounce extends AbstractGame {
         // highest level reached
         else if(numberOfRedPegs == 0 && (currentLevel + 1) > 4) {
         	
-        	System.out.println("tong guan la");
         	Window.close();
         	
         	
@@ -481,8 +493,11 @@ public class ShadowBounce extends AbstractGame {
     	
     }
     
+    /**
+     * all pegs within 70 pixels of the struck peg’s centre are destroyed.
+     * @param i the index of the struck peg
+     */
     public void fireballCollision (int i) {
-    	System.out.println("fire ball");
 		// fire ball
     	//  all pegs within 70 pixels of the struck peg’s centre are destroyed
 		for (int j = 0; j < pegs.length; j++) {
@@ -492,7 +507,7 @@ public class ShadowBounce extends AbstractGame {
     			double pegToPeg = pegs[i].getRect().centre().asVector().sub(pegs[j].getRect().centre().asVector()).length();
     			
         		
-        		if(pegToPeg < 70) {
+        		if(pegToPeg < FIREBALLRANGE) {
         			
         			pegTypeAction(j);
                 	
@@ -502,8 +517,11 @@ public class ShadowBounce extends AbstractGame {
     	}
     }
     
+    /**
+     * balls should bounce off pegs they strike.
+     * @param ball
+     */
     public void ballReaction (Ball ball) {
-    	//String intersectedSide = ball.getRect().intersectedAt(ball.getRect().centre(), ball.getVelocity()).toString();
 
     	String intersectedSide = ball.getRect().intersectedAt(ball.getRect().topLeft(), ball.getVelocity()).toString();
     	
@@ -519,6 +537,10 @@ public class ShadowBounce extends AbstractGame {
 		}
     }
     
+    /**
+     * If a ball leaves the bottom of the screen while making contact with the bucket, the player should get an additional shot.
+     * @param k the index of the ball
+     */
     public void bucketCollision(int k) {
     	if(balls[k] != null && balls[k].intersects(bucket)) {
     		
@@ -532,11 +554,13 @@ public class ShadowBounce extends AbstractGame {
     	}
     }
     
+    /**
+     *  If the ball strikes the powerup, the powerup is activated and destroyed.
+     * @param k the index of the ball
+     */
     public void powerupCollision (int k) {
     	if(isPowerUp && powerUp != null) {
     		if(balls[k] != null && balls[k].intersects(powerUp)) {
-			
-    			System.out.print("wan dan yao kong zhi zhen le " + isPowerUp);
     			powerUp = null;
     			isFireBall = true;
 			
@@ -544,7 +568,7 @@ public class ShadowBounce extends AbstractGame {
     			Point ballPoint = balls[k].getCurrentPoint();
     			Vector2 ballDirection = balls[k].getVelocity();
     			balls[k] = null;
-    			balls[k] = new FireBall(ballPoint, ballDirection.div(10),"res/fireball.png");			  			    			
+    			balls[k] = new FireBall(ballPoint, ballDirection.div(SPEED),"res/fireball.png");			  			    			
     		}
     	}
     }

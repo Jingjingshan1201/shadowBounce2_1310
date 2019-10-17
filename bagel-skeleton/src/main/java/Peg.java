@@ -1,14 +1,19 @@
 /**
- * Sample solution for SWEN20003 Object Oriented Software Development
- * Project 1, Semester 2, 2019
+ * SWEN20003 Object Oriented Software Development
+ * Project 2B, Semester 2, 2019
  *
- * @author Eleanor McMurtry
+ * @author XiaoJun Zhang
  */
 
 import java.awt.Shape;
 
 import bagel.util.Point;
 
+/**
+ * this class inherit Sprite class
+ * 
+ *
+ */
 public class Peg extends Sprite {
 	
 	private Point point;
